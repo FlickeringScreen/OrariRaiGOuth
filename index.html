@@ -307,6 +307,38 @@
             color: #4a9eba;
         }
 
+        .shift-notice {
+            color: #ff6b6b;
+            font-weight: 600;
+            font-size: 13px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            margin-top: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.mfs {
+            background: #4a1c1c;
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+
+        .status-badge.mns {
+            background: #4a1c1c;
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+            margin-left: 5px;
+        }
+
         .debug {
             margin-top: 20px;
             padding: 15px;
@@ -902,7 +934,7 @@
                 return { found: true, schedule: [] };
             }
             
-            // For each shift, extract its location
+            // For each shift, extract its location and special codes
             shiftsFound.forEach((shift, dayIndex) => {
                 if (dayIndex >= 7) return; // Only 7 days in a week
                 
@@ -922,14 +954,25 @@
                 const tokens = afterShift.trim().split(/\s+/).filter(t => t.length > 0);
                 
                 let location = 'SE'; // Default
+                let hasMFS = false;
+                let hasMNS = false;
                 
-                // Look through tokens to find the location
-                // Skip: MFS, MNS, SE>, FS>, RCF>, and numbers like 95, 96
+                // Look through tokens to find the location and special codes
                 for (const token of tokens) {
                     const cleaned = token.replace(/[>,<]/g, ''); // Remove arrows
                     
-                    // Skip status codes
-                    if (['MFS', 'MNS', 'SE', 'FS', 'RCF', 'XXX', 'RT'].includes(cleaned)) {
+                    // Check for special status codes
+                    if (cleaned === 'MFS') {
+                        hasMFS = true;
+                        continue;
+                    }
+                    if (cleaned === 'MNS') {
+                        hasMNS = true;
+                        continue;
+                    }
+                    
+                    // Skip other status codes
+                    if (['SE', 'FS', 'RCF', 'XXX', 'RT'].includes(cleaned)) {
                         continue;
                     }
                     
@@ -943,12 +986,14 @@
                     break;
                 }
                 
-                log(`  Day ${dayIndex + 1}: ${shift.code} @ ${location}`);
+                log(`  Day ${dayIndex + 1}: ${shift.code} @ ${location}${hasMFS ? ' [MFS]' : ''}${hasMNS ? ' [MNS]' : ''}`);
                 
                 schedule.push({
                     date: weekDates[dayIndex],
                     shiftCode: shift.code,
-                    location: location
+                    location: location,
+                    hasMFS: hasMFS,
+                    hasMNS: hasMNS
                 });
             });
             
@@ -1002,10 +1047,20 @@
                 
                 const div = document.createElement('div');
                 div.className = 'shift-item';
+                
+                let statusHTML = '';
+                if (shift.hasMFS) {
+                    statusHTML += '<span class="status-badge mfs">MANCATO FESTIVO</span>';
+                }
+                if (shift.hasMNS) {
+                    statusHTML += '<span class="status-badge mns">MANCATO</span>';
+                }
+                
                 div.innerHTML = `
                     <strong>${shift.date.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: '2-digit' })}</strong><br>
                     Turno: ${shift.shiftCode} (${times[0]} - ${times[1]})<br>
                     Luogo: ${locationName}
+                    ${statusHTML}
                 `;
                 shiftsList.appendChild(div);
             });
