@@ -317,6 +317,24 @@
             margin: 5px 0;
         }
 
+        .footer-links {
+            margin-top: 10px;
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+        }
+
+        .footer-links a {
+            color: #4a9eba;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+            color: #5bc0de;
+        }
+
         .disclaimer {
             margin-top: 15px;
             font-size: 9px;
@@ -326,10 +344,64 @@
             text-align: center;
             padding: 0 20px;
         }
+
+        .legal-page {
+            display: none;
+            background: #0f3460;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid #1a4d7a;
+        }
+
+        .legal-page.active {
+            display: block;
+        }
+
+        .legal-page h1 {
+            color: #4a9eba;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .legal-page h2 {
+            color: #5bc0de;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .legal-page p, .legal-page ul {
+            color: #c8d3dc;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .legal-page ul {
+            margin-left: 20px;
+        }
+
+        .legal-page li {
+            margin-bottom: 10px;
+        }
+
+        .legal-page .back-btn {
+            margin-top: 30px;
+            width: auto;
+            padding: 10px 30px;
+        }
+
+        .legal-page .last-updated {
+            color: #6c757d;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="mainApp">
         <h1>📅 Generatore Calendario Turni RAI</h1>
         <p class="subtitle">Genera il tuo calendario turni in formato ICS</p>
 
@@ -384,8 +456,179 @@
         <div class="footer">
             <p>Creato da Antonio Amato</p>
             <p>Versione 1.37_Beta</p>
+            <div class="footer-links">
+                <a id="privacyLink">Privacy Policy</a>
+                <a id="termsLink">Terms of Service</a>
+            </div>
             <p class="disclaimer">L'autore non è responsabile per eventuali errori nei dati o nella conversione dei turni. Per informazioni corrette e aggiornate, fare sempre riferimento ai canali di comunicazione ufficiali.</p>
         </div>
+    </div>
+
+    <!-- Privacy Policy Page -->
+    <div class="legal-page" id="privacyPage">
+        <h1>Privacy Policy</h1>
+        <p class="last-updated">Last Updated: December 6, 2024</p>
+
+        <h2>1. Introduction</h2>
+        <p>RAI Shift Calendar Generator ("we", "our", or "the app") is a client-side web application that helps users convert PDF shift schedules into calendar files. This Privacy Policy explains how we handle your information.</p>
+
+        <h2>2. Information We Collect</h2>
+        <p><strong>We do not collect, store, or transmit any personal information to our servers.</strong></p>
+        <p>The app processes the following data entirely within your browser:</p>
+        <ul>
+            <li><strong>PDF Files:</strong> Your uploaded shift schedule PDF is processed locally in your browser and never sent to any server</li>
+            <li><strong>Personal Information:</strong> Your name (first and last) is used only to filter your shifts from the PDF and label the calendar file</li>
+            <li><strong>Local Storage:</strong> Your name may be saved in your browser's local storage for convenience on future visits</li>
+        </ul>
+
+        <h2>3. Google Calendar Integration</h2>
+        <p>When you choose to use the "Add to Google Calendar" feature:</p>
+        <ul>
+            <li>You will be asked to sign in with your Google account via Google's OAuth 2.0 system</li>
+            <li>We request permission to add events to your Google Calendar (scope: calendar.events)</li>
+            <li>Your authentication token is stored temporarily in your browser session only</li>
+            <li>We never have access to your Google password</li>
+            <li>We only create calendar events - we cannot read, modify, or delete existing events</li>
+            <li>The connection ends when you close your browser</li>
+        </ul>
+
+        <h2>4. Data Processing</h2>
+        <ul>
+            <li><strong>Client-Side Only:</strong> All PDF processing, shift extraction, and calendar generation happens in your browser</li>
+            <li><strong>No Server Storage:</strong> We do not have any servers that store your data</li>
+            <li><strong>No Third-Party Sharing:</strong> Your shift data is never shared with anyone except Google Calendar (when you explicitly choose to sync)</li>
+            <li><strong>No Analytics:</strong> We do not use tracking cookies or analytics services</li>
+        </ul>
+
+        <h2>5. Third-Party Services</h2>
+        <p>This app integrates with:</p>
+        <ul>
+            <li><strong>Google Calendar API:</strong> Only when you click "Add to Google Calendar". Review Google's privacy policy at <a href="https://policies.google.com/privacy" target="_blank" style="color: #4a9eba;">https://policies.google.com/privacy</a></li>
+            <li><strong>PDF.js (Mozilla):</strong> Open-source library for PDF processing, runs entirely in your browser</li>
+        </ul>
+
+        <h2>6. Your Rights</h2>
+        <p>Since we don't store any data, there's nothing to delete or modify on our end. You can:</p>
+        <ul>
+            <li>Clear your browser's local storage to remove saved names</li>
+            <li>Revoke Google Calendar access at any time via your Google Account settings</li>
+            <li>Delete calendar events directly from Google Calendar</li>
+        </ul>
+
+        <h2>7. Security</h2>
+        <p>Your data security is ensured by:</p>
+        <ul>
+            <li>Processing everything locally in your browser</li>
+            <li>Using Google's secure OAuth 2.0 authentication system</li>
+            <li>HTTPS encryption for all connections</li>
+            <li>No server-side data storage or transmission</li>
+        </ul>
+
+        <h2>8. Children's Privacy</h2>
+        <p>This app is intended for employees managing work schedules. We do not knowingly collect information from children under 13.</p>
+
+        <h2>9. Changes to This Policy</h2>
+        <p>We may update this Privacy Policy occasionally. Changes will be posted on this page with an updated "Last Updated" date.</p>
+
+        <h2>10. Contact</h2>
+        <p>For questions about this Privacy Policy or the app, please contact: <a href="mailto:flickeringonascreen@gmail.com" style="color: #4a9eba;">flickeringonascreen@gmail.com</a></p>
+
+        <button class="back-btn" id="privacyBack">← Back to App</button>
+    </div>
+
+    <!-- Terms of Service Page -->
+    <div class="legal-page" id="termsPage">
+        <h1>Terms of Service</h1>
+        <p class="last-updated">Last Updated: December 6, 2024</p>
+
+        <h2>1. Acceptance of Terms</h2>
+        <p>By using RAI Shift Calendar Generator ("the app"), you agree to these Terms of Service. If you do not agree, please do not use the app.</p>
+
+        <h2>2. Description of Service</h2>
+        <p>The app is a free, client-side web tool that:</p>
+        <ul>
+            <li>Extracts shift information from uploaded PDF schedules</li>
+            <li>Generates calendar files (.ics format)</li>
+            <li>Optionally syncs shifts to Google Calendar</li>
+        </ul>
+        <p>The service is provided "as-is" without warranties of any kind.</p>
+
+        <h2>3. User Responsibilities</h2>
+        <p>You agree to:</p>
+        <ul>
+            <li>Provide accurate information (name) for shift extraction</li>
+            <li>Only upload PDF files you have the right to process</li>
+            <li>Verify all extracted shift data before using it</li>
+            <li>Use the app only for lawful purposes</li>
+            <li>Not attempt to reverse engineer or exploit the app</li>
+            <li>Not use the app to violate any employment agreements or confidentiality obligations</li>
+        </ul>
+
+        <h2>4. Data Accuracy</h2>
+        <p><strong>IMPORTANT:</strong> This app extracts data automatically from PDFs. While we strive for accuracy:</p>
+        <ul>
+            <li>Extracted shifts may contain errors</li>
+            <li>You are responsible for verifying all shift information</li>
+            <li>Always refer to official company communications for authoritative schedules</li>
+            <li>We are not responsible for missed shifts, incorrect times, or scheduling conflicts</li>
+        </ul>
+
+        <h2>5. Google Calendar Integration</h2>
+        <p>When using Google Calendar sync:</p>
+        <ul>
+            <li>You grant the app permission to create events in your Google Calendar</li>
+            <li>You can revoke this permission at any time via Google Account settings</li>
+            <li>The app uses Google's OAuth system - we never see your Google password</li>
+            <li>You are responsible for managing events created in your calendar</li>
+        </ul>
+
+        <h2>6. Intellectual Property</h2>
+        <ul>
+            <li>The app code is created by Antonio Amato</li>
+            <li>You may use the app for personal, non-commercial purposes</li>
+            <li>You may not copy, modify, or distribute the app without permission</li>
+            <li>PDF content and shift data remain your property</li>
+        </ul>
+
+        <h2>7. Limitations of Liability</h2>
+        <p>To the fullest extent permitted by law:</p>
+        <ul>
+            <li>The app is provided "as-is" without warranties</li>
+            <li>We are not liable for any damages arising from use of the app</li>
+            <li>We are not responsible for data extraction errors or calendar sync issues</li>
+            <li>You use the app at your own risk</li>
+            <li>We are not liable for any employment-related consequences from using the app</li>
+        </ul>
+
+        <h2>8. No Affiliation</h2>
+        <p>This app is an independent tool and is not officially affiliated with, endorsed by, or connected to RAI or any employer. It is a personal project to help with schedule management.</p>
+
+        <h2>9. Service Availability</h2>
+        <ul>
+            <li>We do not guarantee the app will always be available</li>
+            <li>The app may be discontinued or modified at any time</li>
+            <li>We are not responsible for service interruptions</li>
+        </ul>
+
+        <h2>10. Privacy</h2>
+        <p>Your use of the app is also governed by our Privacy Policy. Please review it to understand how we handle information.</p>
+
+        <h2>11. API Usage Limits</h2>
+        <p>The Google Calendar integration is subject to Google's API quotas. If quota limits are reached, the sync feature may be temporarily unavailable until the quota resets.</p>
+
+        <h2>12. Changes to Terms</h2>
+        <p>We may update these Terms at any time. Continued use of the app after changes constitutes acceptance of the new Terms.</p>
+
+        <h2>13. Termination</h2>
+        <p>We reserve the right to terminate or restrict access to the app for any reason, including violation of these Terms.</p>
+
+        <h2>14. Governing Law</h2>
+        <p>These Terms are governed by the laws of Italy, without regard to conflict of law provisions.</p>
+
+        <h2>15. Contact</h2>
+        <p>For questions about these Terms, please contact: <a href="mailto:flickeringonascreen@gmail.com" style="color: #4a9eba;">flickeringonascreen@gmail.com</a></p>
+
+        <button class="back-btn" id="termsBack">← Back to App</button>
     </div>
 
     <script>
@@ -1173,6 +1416,33 @@
 
         document.getElementById('lastName').addEventListener('change', function(e) {
             localStorage.setItem('raiLastName', e.target.value.trim());
+        });
+
+        // Legal pages navigation
+        document.getElementById('privacyLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('privacyPage').classList.add('active');
+            window.scrollTo(0, 0);
+        });
+
+        document.getElementById('termsLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('termsPage').classList.add('active');
+            window.scrollTo(0, 0);
+        });
+
+        document.getElementById('privacyBack').addEventListener('click', function() {
+            document.getElementById('privacyPage').classList.remove('active');
+            document.getElementById('mainApp').style.display = 'block';
+            window.scrollTo(0, 0);
+        });
+
+        document.getElementById('termsBack').addEventListener('click', function() {
+            document.getElementById('termsPage').classList.remove('active');
+            document.getElementById('mainApp').style.display = 'block';
+            window.scrollTo(0, 0);
         });
     </script>
 </body>
