@@ -445,7 +445,7 @@
 
         <div class="footer">
             <p>Creato da Antonio Amato</p>
-            <p>Versione 1.2.10Beta</p>
+            <p>Versione 1.3.2Beta</p>
             <div class="footer-links">
                 <a href="https://flickeringscreen.github.io/OrariRaiGOuth/privacy.html" target="_blank">Privacy Policy</a>
                 <a href="https://flickeringscreen.github.io/OrariRaiGOuth/terms.html" target="_blank">Terms of Service</a>
@@ -503,24 +503,71 @@
         };
 
         const LOCATIONS = {
+            // Nomentano
             'N1': 'Nomentano 1', 'N2': 'Nomentano 2', 'N3': 'Nomentano 3',
             'N4': 'Nomentano 4', 'N5': 'Nomentano 5', 'N6': 'Nomentano 6',
-            'AFP1': 'Foro Italico', 'AFI': 'Foro Italico',
-            '1': 'Teulada 1', '2': 'Teulada 2', '3': 'Teulada 3',
-            '4': 'Teulada 4', '5': 'Teulada 5',
+            
+            // Foro Italico
+            'AFP1': 'Foro Italico Sala Prove 1',
+            'AFI': 'Foro Italico',
+            
+            // Teulada Studi
+            '1': 'Teulada Studio 1', '2': 'Teulada Studio 2', '3': 'Teulada Studio 3',
+            '4': 'Teulada Studio 4', '5': 'Teulada Studio 5', '6': 'Teulada Studio 6',
+            '7': 'Teulada Studio 7', '8': 'Teulada Studio 8', '9': 'Teulada Studio 9',
+            '10': 'Teulada Studio 10', '11': 'Teulada Studio 11', '12': 'Teulada Studio 12',
+            
+            // Saxa Rubra
             'SR1': 'Saxa Rubra 1', 'SR2': 'Saxa Rubra 2', 'SR3': 'Saxa Rubra 3',
             'SR4': 'Saxa Rubra 4', 'SR5': 'Saxa Rubra 5 - Rai Sport',
-            'RAN': 'Saxa Rubra - RAI NEWS', 'AUM': 'Montecitorio',
+            'RAN': 'Saxa Rubra - RAI NEWS',
+            
+            // Altri Studi
+            'S9A': 'Studio 9A', 'S09': 'Studio 09', 'S12': 'Studio 12',
+            'S04': 'Studio 04', 'S07': 'Studio 07',
+            
+            // TG
+            'TG1': 'TG1', 'TG2': 'TG2', 'TG3': 'TG3',
+            
+            // OB Vans (mantengono il codice completo o hanno nomi specifici)
+            'OB1': 'OB1', 'OB2': 'OB2', 'OB3': 'OB3', 'OB4': 'OB4', 'OB5': 'OB5',
+            'OB6': 'OB6', 'OB7': 'OB7', 'OB8': 'OB8', 'OB9': 'OB9', 'OB10': 'OB10',
+            'OB20': 'OB20', 'OB30': 'OB30', 'OB41': 'OB41',
+            
+            // OB Roma
+            'OB-RM1': 'OB-Roma 1', 'OB-RM2': 'OB-Roma 2', 'OB-RM3': 'OB-Roma 3',
+            'OB-RM4': 'OB-Roma 4', 'OB-RM5': 'OB-Roma 5', 'OB-RM6': 'OB-Roma 6',
+            'OB-RM7': 'OB-Roma 7', 'OB-RM8': 'OB-Roma 8', 'OB-RM9': 'OB-Roma 9',
+            'OB-RM10': 'OB-Roma 10',
+            'OBRM1': 'OB-Roma 1', 'OBRM2': 'OB-Roma 2', 'OBRM3': 'OB-Roma 3',
+            'OBRM4': 'OB-Roma 4', 'OBRM5': 'OB-Roma 5', 'OBRM6': 'OB-Roma 6',
+            'OBRM7': 'OB-Roma 7', 'OBRM8': 'OB-Roma 8', 'OBRM9': 'OB-Roma 9',
+            'OBRM10': 'OB-Roma 10',
+            
+            // Esterne
+            'SE': 'Servizio Esterno',
+            'ES01': 'Esterna 1', 'ES02': 'Esterna 2', 'ES03': 'Esterna 3', 'ES04': 'Esterna 4',
+            'ES05': 'Esterna 5', 'ES06': 'Esterna 6', 'ES07': 'Esterna 7', 'ES08': 'Esterna 8',
+            'ES09': 'Esterna 9', 'ES10': 'Esterna 10', 'ES11': 'Esterna 11', 'ES12': 'Esterna 12',
+            'ES13': 'Esterna 13', 'ES14': 'Esterna 14', 'ES15': 'Esterna 15', 'ES16': 'Esterna 16',
+            'ES17': 'Esterna 17', 'ES18': 'Esterna 18', 'ES19': 'Esterna 19', 'ES20': 'Esterna 20',
+            
+            // Esterne Sopralluogo
+            'SPL1': 'Esterna Sopralluogo 1', 'SPL2': 'Esterna Sopralluogo 2', 'SPL3': 'Esterna Sopralluogo 3',
+            'SPL4': 'Esterna Sopralluogo 4', 'SPL5': 'Esterna Sopralluogo 5', 'SPL6': 'Esterna Sopralluogo 6',
+            'SPL7': 'Esterna Sopralluogo 7', 'SPL8': 'Esterna Sopralluogo 8', 'SPL9': 'Esterna Sopralluogo 9',
+            'SPL10': 'Esterna Sopralluogo 10',
+            
+            // Sedi Istituzionali
+            'AUM': 'Montecitorio', 'MC': 'Montecitorio',
+            'QUA': 'Quirinale', 'QUB': 'Quirinale Stand Up',
+            'SEN': 'Senato',
+            
+            // Altro
             'DISP': 'Disposizione', 'Disp.': 'Disposizione',
-            'TdV': 'Teatro delle Vittorie', 'SE': 'Servizio Esterno',
-            'MC': 'Media Center', 'QUA': 'Quarantena', 'QUB': 'Quarantena B',
-            'SEN': 'Senato', 'ES06': 'Esterno 06', 'S9A': 'Studio 9A',
-            'S09': 'Studio 09', 'S12': 'Studio 12', 'S03': 'Studio 03',
-            'S04': 'Studio 04', 'S07': 'Studio 07', 'TG1': 'TG1',
-            'TG2': 'TG2', 'TG3': 'TG3', 'OB': 'Outside Broadcast',
-            'OB20': 'Outside Broadcast 20', 'OB30': 'Outside Broadcast 30',
-            'OB41': 'Outside Broadcast 41', 'RT': 'Riposo Tecnico',
-            '645': '645', '475': '475'
+            'TdV': 'Teatro delle Vittorie',
+            'RT': 'Riposo Tecnico',
+            'ITA645': 'ITA645'
         };
 
         function log(message) {
@@ -911,11 +958,31 @@
         }
 
         function getLocationName(locationCode) {
-            let cleanCode = locationCode.replace(/^OB-?/, '').replace(/[>\d]+$/, '');
+            // Gestione passaggi tra location (es: 10>12 o AFI>OBRM4)
+            if (locationCode.includes('>')) {
+                const locations = locationCode.split('>');
+                const names = locations.map(loc => {
+                    const trimmed = loc.trim();
+                    // Per OB vans, mantieni il codice completo
+                    if (trimmed.startsWith('OB')) {
+                        return trimmed;
+                    }
+                    return LOCATIONS[trimmed] || trimmed;
+                });
+                return names.join(' → ');
+            }
+            
+            // Per OB vans, mantieni il codice completo senza modifiche
+            if (locationCode.startsWith('OB')) {
+                return locationCode;
+            }
+            
+            let cleanCode = locationCode.replace(/[>,<]/g, '').trim();
             
             if (LOCATIONS[cleanCode]) return LOCATIONS[cleanCode];
             if (LOCATIONS[locationCode]) return LOCATIONS[locationCode];
             
+            // Cerca corrispondenze parziali solo per non-OB codes
             for (const [key, value] of Object.entries(LOCATIONS)) {
                 if (locationCode.includes(key) || key.includes(locationCode)) {
                     return value;
