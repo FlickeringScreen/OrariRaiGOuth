@@ -266,6 +266,35 @@
             margin-bottom: 15px;
         }
 
+        .sync-status {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .sync-status.success {
+            background: #1e4620;
+            color: #5cb85c;
+            border: 1px solid #4cae4c;
+            display: block;
+        }
+
+        .sync-status.error {
+            background: #4a1c1c;
+            color: #f8d7da;
+            border: 1px solid #c23a52;
+            display: block;
+        }
+
+        .sync-status.info {
+            background: #1a3a52;
+            color: #5bc0de;
+            border: 1px solid #46b8da;
+            display: block;
+        }
+
         .shift-item {
             padding: 10px;
             margin: 8px 0;
@@ -389,6 +418,8 @@
                 <span id="authStatusText"></span>
             </div>
             
+            <div class="sync-status" id="syncStatus"></div>
+            
             <div class="button-group">
                 <button type="button" id="googleCalendarBtn" class="google">
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -493,6 +524,15 @@
             status.className = `status ${type}`;
         }
 
+        function showSyncStatus(message, type) {
+            const syncStatus = document.getElementById('syncStatus');
+            syncStatus.textContent = message;
+            syncStatus.className = `sync-status ${type}`;
+            
+            // Scroll to make it visible on mobile
+            syncStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
         function updateAuthStatus(message, isAuthenticated) {
             const authStatus = document.getElementById('authStatus');
             const authStatusText = document.getElementById('authStatusText');
@@ -575,7 +615,7 @@
                 googleBtn.disabled = true;
                 
                 showLoading(true);
-                showStatus('🔄 Aggiunta turni a Google Calendar...', 'info');
+                showSyncStatus('🔄 Aggiunta turni a Google Calendar...', 'info');
                 log('📅 Starting Google Calendar sync...');
 
                 let successCount = 0;
@@ -642,10 +682,10 @@
                 showLoading(false);
                 
                 if (failCount === 0) {
-                    showStatus(`✅ Tutti i ${successCount} turni sono stati aggiunti correttamente a Google Calendar!`, 'success');
+                    showSyncStatus(`✅ Tutti i ${successCount} turni sono stati aggiunti correttamente a Google Calendar!`, 'success');
                     log(`✅ Successfully added ${successCount} events`);
                 } else {
-                    showStatus(`⚠️ Aggiunti ${successCount} turni, ${failCount} falliti`, 'error');
+                    showSyncStatus(`⚠️ Aggiunti ${successCount} turni, ${failCount} falliti`, 'error');
                     log(`⚠️ Added ${successCount}, failed ${failCount}`);
                 }
                 
@@ -657,7 +697,7 @@
 
             } catch (error) {
                 showLoading(false);
-                showStatus('❌ Errore: ' + error.message, 'error');
+                showSyncStatus('❌ Errore: ' + error.message, 'error');
                 log('💥 Sync error: ' + error.message);
                 isSyncing = false;
                 document.getElementById('googleCalendarBtn').disabled = false;
