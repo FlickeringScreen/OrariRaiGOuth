@@ -431,6 +431,9 @@
         let googleTokenClient = null;
         let gapiLoaded = false;
         let gisLoaded = false;
+        let isSyncing = false;
+        let initAttempts = 0;
+        const MAX_INIT_ATTEMPTS = 20;
 
         // Global variables
         let extractedSchedule = null;
@@ -504,10 +507,19 @@
         }
 
         function initGoogleAuth() {
+            // Prevent infinite loop
+            initAttempts++;
+            if (initAttempts > MAX_INIT_ATTEMPTS) {
+                log('⚠️ Max initialization attempts reached, stopping...');
+                return;
+            }
+
             // Wait for Google Identity Services library to load
             if (typeof google === 'undefined' || !google.accounts) {
-                log('⏳ Waiting for Google library to load...');
-                setTimeout(initGoogleAuth, 100);
+                if (initAttempts === 1) {
+                    log('⏳ Waiting for Google library to load...');
+                }
+                setTimeout(initGoogleAuth, 200);
                 return;
             }
 
@@ -526,17 +538,21 @@
                         } else {
                             showStatus('❌ Autenticazione fallita', 'error');
                             log('❌ Google authentication failed');
+                            isSyncing = false;
                         }
                     },
                     error_callback: (error) => {
                         showStatus('❌ Errore autenticazione: ' + (error.message || 'Unknown error'), 'error');
                         log('❌ Auth error: ' + JSON.stringify(error));
+                        isSyncing = false;
                     }
                 });
                 gisLoaded = true;
                 log('✓ Google OAuth client initialized');
             } catch (error) {
-                log('⚠️ Could not initialize Google OAuth: ' + error.message);
+                if (initAttempts === 1) {
+                    log('⚠️ Could not initialize Google OAuth: ' + error.message);
+                }
                 setTimeout(initGoogleAuth, 500);
             }
         }
@@ -547,7 +563,17 @@
                 return;
             }
 
+            if (isSyncing) {
+                showStatus('⏳ Sincronizzazione già in corso, attendere...', 'info');
+                log('⚠️ Sync already in progress, ignoring duplicate request');
+                return;
+            }
+
             try {
+                isSyncing = true;
+                const googleBtn = document.getElementById('googleCalendarBtn');
+                googleBtn.disabled = true;
+                
                 showLoading(true);
                 showStatus('🔄 Aggiunta turni a Google Calendar...', 'info');
                 log('📅 Starting Google Calendar sync...');
@@ -616,17 +642,25 @@
                 showLoading(false);
                 
                 if (failCount === 0) {
-                    showStatus(`✅ Tutti i ${successCount} turni aggiunti con successo a Google Calendar!`, 'success');
+                    showStatus(`✅ Tutti i ${successCount} turni sono stati aggiunti correttamente a Google Calendar!`, 'success');
                     log(`✅ Successfully added ${successCount} events`);
                 } else {
                     showStatus(`⚠️ Aggiunti ${successCount} turni, ${failCount} falliti`, 'error');
                     log(`⚠️ Added ${successCount}, failed ${failCount}`);
                 }
+                
+                // Re-enable button after 3 seconds to prevent accidental double-clicks
+                setTimeout(() => {
+                    googleBtn.disabled = false;
+                    isSyncing = false;
+                }, 3000);
 
             } catch (error) {
                 showLoading(false);
                 showStatus('❌ Errore: ' + error.message, 'error');
                 log('💥 Sync error: ' + error.message);
+                isSyncing = false;
+                document.getElementById('googleCalendarBtn').disabled = false;
             }
         }
 
@@ -1153,14 +1187,19 @@
                 return;
             }
 
+            if (isSyncing) {
+                showStatus('⏳ Sincronizzazione già in corso, attendere...', 'info');
+                return;
+            }
+
             if (!gisLoaded) {
                 showStatus('⏳ Caricamento autenticazione Google...', 'info');
                 log('⏳ Google library not ready yet, initializing...');
                 initGoogleAuth();
                 setTimeout(() => {
-                    if (gisLoaded) {
+                    if (gisLoaded && !isSyncing) {
                         document.getElementById('googleCalendarBtn').click();
-                    } else {
+                    } else if (!gisLoaded) {
                         showStatus('❌ Impossibile caricare autenticazione Google. Riprova tra qualche secondo.', 'error');
                     }
                 }, 1000);
@@ -1177,6 +1216,7 @@
                 } catch (error) {
                     showStatus('❌ Errore: ' + error.message, 'error');
                     log('💥 Auth request error: ' + error.message);
+                    isSyncing = false;
                 }
             } else {
                 log('✓ Already authenticated, syncing...');
