@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generatore Calendario Turni RAI</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: #0f3460;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid #1a4d7a;
+        }
+
+        h1 {
+            color: #4a9eba;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #c8d3dc;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #c8d3dc;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #1a4d7a;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            background: #16213e;
+            color: #f8f9fa;
+        }
+
+        input[type="text"]:focus,
+        input[type="file"]:focus {
+            outline: none;
+            border-color: #4a9eba;
+        }
+
+        input[type="file"] {
+            cursor: pointer;
+            color: #c8d3dc;
+        }
+
+        input[type="file"]::file-selector-button {
+            background: #1a4d7a;
+            color: #f8f9fa;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            background: #4a9eba;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4a9eba 0%, #3a7d92 100%);
+            color: #0f3460;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(74, 158, 186, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #495057;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        button.secondary:hover {
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        button.google {
+            background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button.google:hover {
+            box-shadow: 0 10px 20px rgba(66, 133, 244, 0.4);
+        }
+
+        button.google svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .button-group button {
+            margin: 0;
+        }
+
+        @media (max-width: 600px) {
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .auth-status {
+            padding: 10px;
+            background: #16213e;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            color: #5bc0de;
+            font-size: 13px;
+            display: none;
+        }
+
+        .auth-status.active {
+            display: block;
+        }
+
+        .warning-box {
+            background: #4a3c1c;
+            border: 1px solid #d4a017;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #f8d7a0;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .warning-box strong {
+            color: #ffd700;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status.success {
+            background: #1e4620;
+            color: #5cb85c;
+            border: 1px solid #4cae4c;
+            display: block;
+        }
+
+        .status.error {
+            background: #4a1c1c;
+            color: #f8d7da;
+            border: 1px solid #c23a52;
+            display: block;
+        }
+
+        .status.info {
+            background: #1a3a52;
+            color: #5bc0de;
+            border: 1px solid #46b8da;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #16213e;
+            border-top: 4px solid #4a9eba;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .shifts-preview {
+            margin-top: 20px;
+            padding: 20px;
+            background: #16213e;
+            border-radius: 8px;
+            border: 2px solid #4a9eba;
+            display: none;
+        }
+
+        .shifts-preview.active {
+            display: block;
+        }
+
+        .shifts-preview h3 {
+            color: #4a9eba;
+            margin-bottom: 15px;
+        }
+
+        .shift-item {
+            padding: 10px;
+            margin: 8px 0;
+            background: #0f3460;
+            border-radius: 5px;
+            border-left: 4px solid #4a9eba;
+            color: #f8f9fa;
+        }
+
+        .shift-item strong {
+            color: #4a9eba;
+        }
+
+        .debug {
+            margin-top: 20px;
+            padding: 15px;
+            background: #16213e;
+            border-radius: 8px;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #1a4d7a;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #adb5bd;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        h3 {
+            color: #f8f9fa;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 11px;
+            padding: 20px 0 10px 0;
+            border-top: 1px solid #1a4d7a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        .disclaimer {
+            margin-top: 15px;
+            font-size: 9px;
+            color: #495057;
+            line-height: 1.4;
+            max-width: 600px;
+            text-align: center;
+            padding: 0 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Generatore Calendario Turni RAI</h1>
+        <p class="subtitle">Genera il tuo calendario turni in formato ICS</p>
+
+        <div id="uploadSection">
+            <div class="form-group">
+                <label for="pdfFile">Carica il PDF dell'orario:</label>
+                <input type="file" id="pdfFile" accept=".pdf" required>
+            </div>
+
+            <div class="form-group">
+                <label for="firstName">Nome:</label>
+                <input type="text" id="firstName" placeholder="Mario" required>
+            </div>
+
+            <div class="form-group">
+                <label for="lastName">Cognome:</label>
+                <input type="text" id="lastName" placeholder="Rossi" required>
+            </div>
+
+            <button type="button" id="extractBtn">Estrai Turni dal PDF</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;">Elaborazione in corso...</p>
+        </div>
+
+        <div class="status" id="status"></div>
+
+        <div class="shifts-preview" id="shiftsPreview">
+            <h3>✅ Turni Trovati:</h3>
+            <div id="shiftsList"></div>
+            
+            <div class="warning-box">
+                <strong>⚠️ Nota sulla Privacy:</strong> Il pulsante "Aggiungi a Google Calendar" utilizza credenziali OAuth pubbliche visibili nel codice. Questo è sicuro per uso personale, ma tieni presente che altri potrebbero teoricamente vedere le credenziali. I tuoi dati del calendario rimangono privati e protetti da Google.
+            </div>
+            
+            <div class="auth-status" id="authStatus">
+                <span id="authStatusText"></span>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" id="googleCalendarBtn" class="google">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Aggiungi a Google Calendar
+                </button>
+                <button type="button" id="downloadBtn" class="secondary">⬇️ Scarica File ICS</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Creato da Antonio Amato</p>
+            <p>Versione 1.37_Beta</p>
+            <p class="disclaimer">L'autore non è responsabile per eventuali errori nei dati o nella conversione dei turni. Per informazioni corrette e aggiornate, fare sempre riferimento ai canali di comunicazione ufficiali.</p>
+        </div>
+    </div>
+
+    <script>
+        // Set PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Google OAuth Configuration
+        const GOOGLE_CLIENT_ID = '907654321098-abcdefghijklmnop.apps.googleusercontent.com'; // Demo client ID - users can replace
+        const GOOGLE_API_KEY = 'AIzaSyDemoKey123456789'; // Demo API key
+        const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
+        
+        let googleAccessToken = null;
+        let googleTokenClient = null;
+
+        // Global variables
+        let extractedSchedule = null;
+        let currentFirstName = '';
+        let currentLastName = '';
+
+        const SHIFT_TIMES = {
+            '4o': ['05:55', '13:30'], '5o': ['05:55', '14:30'], '01': ['05:45', '14:20'],
+            '05': ['05:55', '14:30'], '14': ['12:15', '20:50'], '57': ['11:25', '19:00'],
+            '5T': ['13:00', '20:35'], '1M': ['09:30', '18:05'], '2E': ['11:25', '20:00'],
+            '2Q': ['14:00', '22:35'], '3Z': ['07:30', '16:05'], '6E': ['05:30', '13:05'],
+            '6L': ['12:00', '19:35'], '7N': ['15:25', '23:00'], 'B1': ['05:50', '14:25'],
+            'C': ['07:00', '15:35'], 'C*': ['07:00', '14:35'], 'Ce*': ['07:00', '14:35'],
+            'D': ['08:00', '16:35'], 'D*': ['08:00', '15:35'], 'De*': ['08:00', '15:35'],
+            'E': ['08:30', '17:05'], 'E*': ['08:30', '16:05'], 'EZ': ['10:25', '19:00'],
+            'F': ['09:00', '17:35'], 'F*': ['09:00', '16:35'], 'Fe*': ['09:00', '16:35'],
+            'F0': ['08:25', '17:00'], 'FH': ['08:25', '16:00'], 'G': ['10:00', '18:35'],
+            'G*': ['10:00', '17:35'], 'G+': ['11:00', '18:35'], 'H': ['11:00', '19:30'],
+            'I': ['12:45', '21:20'], 'I*': ['12:45', '20:20'], 'L': ['13:30', '22:05'],
+            'L*': ['13:30', '21:05'], 'L+': ['14:30', '22:05'], 'M': ['15:00', '23:35'],
+            'M*': ['15:00', '22:35'], 'M+': ['16:00', '23:35'], 'N': ['15:55', '00:30'],
+            'N+': ['16:55', '00:30'], 'N1': ['16:25', '01:00'], 'O': ['16:55', '01:30'],
+            'RC': ['05:30', '14:05'], 'RG': ['12:00', '20:35'], 'RU': ['05:00', '13:35'],
+            'SR': ['10:45', '19:20'], 'TC': ['06:30', '15:05'], 'TD': ['06:30', '14:05'],
+            'UD': ['10:25', '18:00'], 'US': ['11:30', '19:05'], 'VI': ['11:30', '20:05'],
+            'XXX': ['00:00', '00:00']
+        };
+
+        const LOCATIONS = {
+            'N1': 'Nomentano 1', 'N2': 'Nomentano 2', 'N3': 'Nomentano 3',
+            'N4': 'Nomentano 4', 'N5': 'Nomentano 5', 'N6': 'Nomentano 6',
+            'AFP1': 'Foro Italico', 'AFI': 'Foro Italico',
+            '1': 'Teulada 1', '2': 'Teulada 2', '3': 'Teulada 3',
+            '4': 'Teulada 4', '5': 'Teulada 5',
+            'SR1': 'Saxa Rubra 1', 'SR2': 'Saxa Rubra 2', 'SR3': 'Saxa Rubra 3',
+            'SR4': 'Saxa Rubra 4', 'SR5': 'Saxa Rubra 5 - Rai Sport',
+            'RAN': 'Saxa Rubra - RAI NEWS', 'AUM': 'Montecitorio',
+            'DISP': 'Disposizione', 'Disp.': 'Disposizione',
+            'TdV': 'Teatro delle Vittorie', 'SE': 'Servizio Esterno',
+            'MC': 'Media Center', 'QUA': 'Quarantena', 'QUB': 'Quarantena B',
+            'SEN': 'Senato', 'ES06': 'Esterno 06', 'S9A': 'Studio 9A',
+            'S09': 'Studio 09', 'S12': 'Studio 12', 'S03': 'Studio 03',
+            'S04': 'Studio 04', 'S07': 'Studio 07', 'TG1': 'TG1',
+            'TG2': 'TG2', 'TG3': 'TG3', 'OB': 'Outside Broadcast',
+            'OB20': 'Outside Broadcast 20', 'OB30': 'Outside Broadcast 30',
+            'OB41': 'Outside Broadcast 41', 'RT': 'Riposo Tecnico',
+            '645': '645', '475': '475'
+        };
+
+        function log(message) {
+            console.log(message);
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        function updateAuthStatus(message, isAuthenticated) {
+            const authStatus = document.getElementById('authStatus');
+            const authStatusText = document.getElementById('authStatusText');
+            authStatusText.textContent = message;
+            authStatus.classList.add('active');
+            
+            if (isAuthenticated) {
+                authStatus.style.borderLeft = '4px solid #28a745';
+            } else {
+                authStatus.style.borderLeft = '4px solid #ffc107';
+            }
+        }
+
+        function initGoogleAuth() {
+            try {
+                googleTokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: GOOGLE_CLIENT_ID,
+                    scope: SCOPES,
+                    callback: (response) => {
+                        if (response.access_token) {
+                            googleAccessToken = response.access_token;
+                            updateAuthStatus('✓ Autenticato con Google', true);
+                            log('✓ Google authentication successful');
+                            
+                            // Automatically sync after authentication
+                            syncToGoogleCalendar();
+                        } else {
+                            showStatus('❌ Autenticazione fallita', 'error');
+                            log('❌ Google authentication failed');
+                        }
+                    },
+                    error_callback: (error) => {
+                        showStatus('❌ Errore autenticazione: ' + error.message, 'error');
+                        log('❌ Auth error: ' + error.message);
+                    }
+                });
+                log('✓ Google OAuth client initialized');
+            } catch (error) {
+                log('⚠️ Could not initialize Google OAuth: ' + error.message);
+            }
+        }
+
+        async function syncToGoogleCalendar() {
+            if (!extractedSchedule || extractedSchedule.length === 0) {
+                showStatus('❌ Nessun turno da sincronizzare!', 'error');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                showStatus('🔄 Aggiunta turni a Google Calendar...', 'info');
+                log('📅 Starting Google Calendar sync...');
+
+                let successCount = 0;
+                let failCount = 0;
+
+                for (const shift of extractedSchedule) {
+                    const times = SHIFT_TIMES[shift.shiftCode];
+                    if (!times || shift.shiftCode === 'XXX') continue;
+
+                    const [startHour, startMin] = times[0].split(':');
+                    const [endHour, endMin] = times[1].split(':');
+
+                    const startDate = new Date(shift.date);
+                    startDate.setHours(parseInt(startHour), parseInt(startMin), 0);
+
+                    let endDate = new Date(shift.date);
+                    endDate.setHours(parseInt(endHour), parseInt(endMin), 0);
+
+                    if (parseInt(endHour) < parseInt(startHour)) {
+                        endDate.setDate(endDate.getDate() + 1);
+                    }
+
+                    const locationName = getLocationName(shift.location);
+                    const eventTitle = `${shift.shiftCode} - ${locationName}`;
+
+                    const event = {
+                        summary: eventTitle,
+                        location: locationName,
+                        description: `Turno ${shift.shiftCode}\nOrario: ${times[0]} - ${times[1]}`,
+                        start: {
+                            dateTime: startDate.toISOString(),
+                            timeZone: 'Europe/Rome'
+                        },
+                        end: {
+                            dateTime: endDate.toISOString(),
+                            timeZone: 'Europe/Rome'
+                        }
+                    };
+
+                    try {
+                        const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${googleAccessToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(event)
+                        });
+
+                        if (response.ok) {
+                            successCount++;
+                            log(`✓ Added: ${eventTitle}`);
+                        } else {
+                            failCount++;
+                            const error = await response.json();
+                            log(`✗ Failed: ${eventTitle} - ${error.error.message}`);
+                        }
+                    } catch (error) {
+                        failCount++;
+                        log(`✗ Network error for: ${eventTitle}`);
+                    }
+                }
+
+                showLoading(false);
+                
+                if (failCount === 0) {
+                    showStatus(`✅ Tutti i ${successCount} turni aggiunti con successo a Google Calendar!`, 'success');
+                    log(`✅ Successfully added ${successCount} events`);
+                } else {
+                    showStatus(`⚠️ Aggiunti ${successCount} turni, ${failCount} falliti`, 'error');
+                    log(`⚠️ Added ${successCount}, failed ${failCount}`);
+                }
+
+            } catch (error) {
+                showLoading(false);
+                showStatus('❌ Errore: ' + error.message, 'error');
+                log('💥 Sync error: ' + error.message);
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('active', show);
+        }
+
+        async function extractTextFromPDF(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = '';
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                
+                const items = textContent.items.sort((a, b) => {
+                    const yDiff = Math.abs(a.transform[5] - b.transform[5]);
+                    if (yDiff > 5) {
+                        return b.transform[5] - a.transform[5];
+                    }
+                    return a.transform[4] - b.transform[4];
+                });
+                
+                let lastY = null;
+                let lineText = '';
+                
+                items.forEach(item => {
+                    const y = item.transform[5];
+                    
+                    if (lastY !== null && Math.abs(y - lastY) > 5) {
+                        fullText += lineText + '\n';
+                        lineText = '';
+                    }
+                    
+                    lineText += item.str + ' ';
+                    lastY = y;
+                });
+                
+                fullText += lineText + '\n';
+            }
+
+            return fullText;
+        }
+
+        function findEmployeeLine(text, firstName, lastName) {
+            const lines = text.split('\n');
+            const searchNames = [
+                `${lastName.toUpperCase()}, ${firstName.toUpperCase()}`,
+                `${lastName.toUpperCase()},${firstName.toUpperCase()}`,
+                lastName.toUpperCase()
+            ];
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                for (const searchName of searchNames) {
+                    if (line.includes(searchName)) {
+                        log(`✓ Found employee at line ${i}`);
+                        return { index: i, line: line, lines: lines };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function extractWeekDates(text) {
+            const lines = text.split('\n');
+            
+            for (const line of lines) {
+                const match = line.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2})\/(\d{2})\/(\d{4})/);
+                if (match) {
+                    const startDay = parseInt(match[1]);
+                    const startMonth = parseInt(match[2]);
+                    const year = parseInt(match[3]);
+                    
+                    log(`✓ Found week dates: ${match[0]}`);
+                    return generateWeekDates(startDay, startMonth, year);
+                }
+            }
+            
+            return generateWeekDates(8, 12, 2025);
+        }
+
+        function generateWeekDates(day, month, year) {
+            const dates = [];
+            const startDate = new Date(year, month - 1, day);
+
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                dates.push(date);
+            }
+
+            return dates;
+        }
+
+        function parseSchedule(text, firstName, lastName) {
+            const employeeData = findEmployeeLine(text, firstName, lastName);
+            
+            if (!employeeData) {
+                return { found: false, schedule: [] };
+            }
+
+            const weekDates = extractWeekDates(text);
+            const schedule = [];
+            
+            // Get the line with the employee name - this line contains ALL the shifts!
+            const nameLine = employeeData.lines[employeeData.index];
+            log(`Name line: ${nameLine}`);
+            
+            // Split the line into tokens to process sequentially
+            // Remove the employee name part first
+            const dataPartMatch = nameLine.match(/[A-Z]+,\s*[A-Z]+\s+(.*)/);
+            if (!dataPartMatch) {
+                log('❌ Could not extract data part from name line');
+                return { found: true, schedule: [] };
+            }
+            
+            const dataPart = dataPartMatch[1];
+            log(`Data part: ${dataPart}`);
+            
+            // Find all shift codes and their positions
+            const shiftPattern = /'([A-Z*+0-9\s]{1,4})'/g;
+            let match;
+            const shiftsFound = [];
+            
+            while ((match = shiftPattern.exec(dataPart)) !== null) {
+                const shiftCode = match[1].trim(); // Trim spaces inside quotes
+                if (SHIFT_TIMES[shiftCode]) {
+                    shiftsFound.push({
+                        code: shiftCode,
+                        position: match.index,
+                        endPosition: match.index + match[0].length
+                    });
+                    log(`  Found shift code: '${shiftCode}'`);
+                }
+            }
+            
+            log(`✓ Found ${shiftsFound.length} valid shift codes`);
+            
+            if (shiftsFound.length === 0) {
+                log('❌ No shifts found on name line');
+                return { found: true, schedule: [] };
+            }
+            
+            // For each shift, extract its location
+            shiftsFound.forEach((shift, dayIndex) => {
+                if (dayIndex >= 7) return; // Only 7 days in a week
+                
+                // Get everything after this shift code until the next shift or end
+                let afterShift;
+                if (dayIndex < shiftsFound.length - 1) {
+                    // Get text between this shift and the next shift
+                    afterShift = dataPart.substring(shift.endPosition, shiftsFound[dayIndex + 1].position);
+                } else {
+                    // Last shift - get everything after it
+                    afterShift = dataPart.substring(shift.endPosition);
+                }
+                
+                log(`  After shift '${shift.code}': "${afterShift.trim()}"`);
+                
+                // Extract all tokens (words) after the shift
+                const tokens = afterShift.trim().split(/\s+/).filter(t => t.length > 0);
+                
+                let location = 'SE'; // Default
+                
+                // Look through tokens to find the location
+                // Skip: MFS, MNS, SE>, FS>, RCF>, and numbers like 95, 96
+                for (const token of tokens) {
+                    const cleaned = token.replace(/[>,<]/g, ''); // Remove arrows
+                    
+                    // Skip status codes
+                    if (['MFS', 'MNS', 'SE', 'FS', 'RCF', 'XXX', 'RT'].includes(cleaned)) {
+                        continue;
+                    }
+                    
+                    // Skip day off codes (95, 96)
+                    if (['95', '96'].includes(cleaned)) {
+                        continue;
+                    }
+                    
+                    // This should be the location
+                    location = cleaned;
+                    break;
+                }
+                
+                log(`  Day ${dayIndex + 1}: ${shift.code} @ ${location}`);
+                
+                schedule.push({
+                    date: weekDates[dayIndex],
+                    shiftCode: shift.code,
+                    location: location
+                });
+            });
+            
+            log(`✓ Total shifts extracted: ${schedule.length}`);
+
+            return { found: true, schedule: schedule };
+        }
+
+        function getLocationName(locationCode) {
+            let cleanCode = locationCode.replace(/^OB-?/, '').replace(/[>\d]+$/, '');
+            
+            if (LOCATIONS[cleanCode]) return LOCATIONS[cleanCode];
+            if (LOCATIONS[locationCode]) return LOCATIONS[locationCode];
+            
+            for (const [key, value] of Object.entries(LOCATIONS)) {
+                if (locationCode.includes(key) || key.includes(locationCode)) {
+                    return value;
+                }
+            }
+            
+            return locationCode;
+        }
+
+        function displayShifts(schedule) {
+            const shiftsList = document.getElementById('shiftsList');
+            shiftsList.innerHTML = '';
+
+            schedule.forEach((shift, idx) => {
+                const times = SHIFT_TIMES[shift.shiftCode];
+                const locationName = getLocationName(shift.location);
+                
+                const div = document.createElement('div');
+                div.className = 'shift-item';
+                div.innerHTML = `
+                    <strong>${shift.date.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: '2-digit' })}</strong><br>
+                    Turno: ${shift.shiftCode} (${times[0]} - ${times[1]})<br>
+                    Luogo: ${locationName}
+                `;
+                shiftsList.appendChild(div);
+            });
+
+            document.getElementById('shiftsPreview').classList.add('active');
+        }
+
+        function generateICS(schedule, firstName, lastName) {
+            let icsContent = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//RAI Shift Calendar//EN',
+                'CALSCALE:GREGORIAN',
+                'METHOD:PUBLISH',
+                'X-WR-CALNAME:RAI Turni - ' + firstName + ' ' + lastName,
+                'X-WR-TIMEZONE:Europe/Rome'
+            ];
+
+            schedule.forEach(shift => {
+                const times = SHIFT_TIMES[shift.shiftCode];
+                if (!times || shift.shiftCode === 'XXX') return;
+
+                const [startHour, startMin] = times[0].split(':');
+                const [endHour, endMin] = times[1].split(':');
+
+                const startDate = new Date(shift.date);
+                startDate.setHours(parseInt(startHour), parseInt(startMin), 0);
+
+                let endDate = new Date(shift.date);
+                endDate.setHours(parseInt(endHour), parseInt(endMin), 0);
+
+                if (parseInt(endHour) < parseInt(startHour)) {
+                    endDate.setDate(endDate.getDate() + 1);
+                }
+
+                const locationName = getLocationName(shift.location);
+                const eventTitle = `${shift.shiftCode} - ${locationName}`;
+
+                icsContent.push('BEGIN:VEVENT');
+                icsContent.push(`DTSTART:${formatICSDate(startDate)}`);
+                icsContent.push(`DTEND:${formatICSDate(endDate)}`);
+                icsContent.push(`SUMMARY:${eventTitle}`);
+                icsContent.push(`LOCATION:${locationName}`);
+                icsContent.push(`DESCRIPTION:Turno ${shift.shiftCode}\\nOrario: ${times[0]} - ${times[1]}`);
+                icsContent.push(`UID:${Date.now()}-${Math.random()}@rai-shifts`);
+                icsContent.push(`DTSTAMP:${formatICSDate(new Date())}`);
+                icsContent.push('END:VEVENT');
+            });
+
+            icsContent.push('END:VCALENDAR');
+            return icsContent.join('\r\n');
+        }
+
+        function formatICSDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${year}${month}${day}T${hours}${minutes}${seconds}`;
+        }
+
+        function addToGoogleCalendar() {
+            log('');
+            log('📅 GOOGLE CALENDAR BUTTON CLICKED');
+            
+            if (!extractedSchedule) {
+                showStatus('❌ Nessun turno da aggiungere!', 'error');
+                return;
+            }
+
+            try {
+                log('📅 Generating ICS for Google Calendar...');
+                const icsContent = generateICS(extractedSchedule, currentFirstName, currentLastName);
+                
+                // Create a blob and convert to base64 for Google Calendar
+                const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+                
+                // Create a temporary download link and trigger it
+                const url = URL.createObjectURL(blob);
+                const fileName = `RAI_Turni_${currentFirstName}_${currentLastName}.ics`;
+                
+                // On mobile, we need to download the ICS and let the user open it
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Show instructions based on device
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                
+                if (isMobile) {
+                    showStatus(`✓ File scaricato! Aprilo e seleziona "Google Calendar" per importare tutti i ${extractedSchedule.length} turni.`, 'success');
+                    
+                    // Try to open Google Calendar app/website
+                    setTimeout(() => {
+                        // This will prompt to open in Google Calendar app on mobile
+                        window.location.href = 'https://calendar.google.com/calendar/r';
+                    }, 1000);
+                } else {
+                    showStatus(`✓ File scaricato! Vai su Google Calendar > Impostazioni > Importa ed esporta per caricare il file.`, 'success');
+                }
+                
+                URL.revokeObjectURL(url);
+                log('✅ ICS file ready for Google Calendar import');
+                
+            } catch (error) {
+                log('💥 ERROR: ' + error.message);
+                console.error(error);
+                showStatus('❌ Errore: ' + error.message, 'error');
+            }
+        }
+
+        function downloadICS(content, firstName, lastName) {
+            const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `RAI_Turni_${firstName}_${lastName}.ics`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function generateGoogleCalendarURL(schedule, firstName, lastName) {
+            if (schedule.length === 0) return null;
+            
+            const urls = [];
+            
+            schedule.forEach(shift => {
+                const times = SHIFT_TIMES[shift.shiftCode];
+                if (!times || shift.shiftCode === 'XXX') return;
+
+                const [startHour, startMin] = times[0].split(':');
+                const [endHour, endMin] = times[1].split(':');
+
+                const startDate = new Date(shift.date);
+                startDate.setHours(parseInt(startHour), parseInt(startMin), 0);
+
+                let endDate = new Date(shift.date);
+                endDate.setHours(parseInt(endHour), parseInt(endMin), 0);
+
+                if (parseInt(endHour) < parseInt(startHour)) {
+                    endDate.setDate(endDate.getDate() + 1);
+                }
+
+                const locationName = getLocationName(shift.location);
+                const eventTitle = `${shift.shiftCode} - ${locationName}`;
+                
+                const formatGoogleDate = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    const seconds = String(date.getSeconds()).padStart(2, '0');
+                    return `${year}${month}${day}T${hours}${minutes}${seconds}`;
+                };
+
+                const startStr = formatGoogleDate(startDate);
+                const endStr = formatGoogleDate(endDate);
+                
+                const params = new URLSearchParams({
+                    action: 'TEMPLATE',
+                    text: eventTitle,
+                    dates: `${startStr}/${endStr}`,
+                    details: `Turno ${shift.shiftCode}\nOrario: ${times[0]} - ${times[1]}`,
+                    location: locationName
+                });
+                
+                urls.push(`https://calendar.google.com/calendar/render?${params.toString()}`);
+            });
+            
+            return urls;
+        }
+
+        // Extract button click handler
+        document.getElementById('extractBtn').onclick = async function() {
+            log('');
+            log('='.repeat(50));
+            log('🚀 EXTRACT BUTTON CLICKED');
+            
+            const pdfFile = document.getElementById('pdfFile').files[0];
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+
+            log(`📄 File: ${pdfFile ? pdfFile.name : 'NONE'}`);
+            log(`👤 Name: ${firstName} ${lastName}`);
+
+            if (!pdfFile) {
+                showStatus('❌ Seleziona un file PDF!', 'error');
+                log('❌ No PDF file selected');
+                return;
+            }
+
+            if (!firstName || !lastName) {
+                showStatus('❌ Inserisci nome e cognome!', 'error');
+                log('❌ Name fields empty');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                showStatus('', '');
+                document.getElementById('shiftsPreview').classList.remove('active');
+
+                log('📖 Extracting PDF text...');
+                const text = await extractTextFromPDF(pdfFile);
+                log(`✓ Extracted ${text.length} characters`);
+                
+                log('🔍 Searching for employee...');
+                const result = parseSchedule(text, firstName, lastName);
+
+                if (!result.found) {
+                    showStatus(`❌ Dipendente "${firstName} ${lastName}" non trovato`, 'error');
+                    log('❌ Employee not found');
+                    showLoading(false);
+                    return;
+                }
+
+                if (result.schedule.length === 0) {
+                    showStatus('❌ Nessun turno trovato', 'error');
+                    log('❌ No shifts found');
+                    showLoading(false);
+                    return;
+                }
+
+                log(`✅ SUCCESS! Found ${result.schedule.length} shifts`);
+                extractedSchedule = result.schedule;
+                currentFirstName = firstName;
+                currentLastName = lastName;
+
+                displayShifts(result.schedule);
+                showStatus(`✓ Trovati ${result.schedule.length} turni!`, 'success');
+                showLoading(false);
+
+            } catch (error) {
+                log('💥 ERROR: ' + error.message);
+                console.error(error);
+                showStatus('❌ Errore: ' + error.message, 'error');
+                showLoading(false);
+            }
+        };
+
+        // Download button click handler
+        document.getElementById('downloadBtn').onclick = function() {
+            log('');
+            log('💾 DOWNLOAD BUTTON CLICKED');
+            
+            if (!extractedSchedule) {
+                showStatus('❌ Nessun turno da scaricare!', 'error');
+                return;
+            }
+
+            try {
+                log('📅 Generating ICS...');
+                const icsContent = generateICS(extractedSchedule, currentFirstName, currentLastName);
+                log(`✓ ICS generated (${icsContent.length} bytes)`);
+                
+                log('⬇️ Downloading...');
+                downloadICS(icsContent, currentFirstName, currentLastName);
+                log('✅ Download complete!');
+                showStatus('✓ File scaricato con successo!', 'success');
+            } catch (error) {
+                log('💥 ERROR: ' + error.message);
+                console.error(error);
+                showStatus('❌ Errore nel download: ' + error.message, 'error');
+            }
+        };
+
+        log('✓ Page loaded successfully');
+        log('✓ Ready to process PDF files');
+
+        // Initialize Google OAuth when page loads
+        window.onload = function() {
+            initGoogleAuth();
+        };
+
+        // Google Calendar button click handler
+        document.getElementById('googleCalendarBtn').onclick = function() {
+            log('');
+            log('🔐 GOOGLE CALENDAR BUTTON CLICKED');
+            
+            if (!extractedSchedule || extractedSchedule.length === 0) {
+                showStatus('❌ Estrai prima i turni dal PDF!', 'error');
+                return;
+            }
+
+            if (!googleAccessToken) {
+                log('🔐 Requesting Google authentication...');
+                updateAuthStatus('⏳ Autenticazione in corso...', false);
+                
+                try {
+                    // Request access token
+                    googleTokenClient.requestAccessToken();
+                } catch (error) {
+                    showStatus('❌ Errore: ' + error.message, 'error');
+                    log('💥 Auth request error: ' + error.message);
+                }
+            } else {
+                log('✓ Already authenticated, syncing...');
+                syncToGoogleCalendar();
+            }
+        };
+
+        // Load saved names from localStorage
+        const savedFirstName = localStorage.getItem('raiFirstName');
+        const savedLastName = localStorage.getItem('raiLastName');
+        
+        if (savedFirstName) {
+            document.getElementById('firstName').value = savedFirstName;
+            log(`✓ Loaded saved first name: ${savedFirstName}`);
+        }
+        if (savedLastName) {
+            document.getElementById('lastName').value = savedLastName;
+            log(`✓ Loaded saved last name: ${savedLastName}`);
+        }
+
+        // Save names when they change
+        document.getElementById('firstName').addEventListener('change', function(e) {
+            localStorage.setItem('raiFirstName', e.target.value.trim());
+        });
+
+        document.getElementById('lastName').addEventListener('change', function(e) {
+            localStorage.setItem('raiLastName', e.target.value.trim());
+        });
+    </script>
+</body>
+</html>
