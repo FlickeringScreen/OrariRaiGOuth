@@ -186,6 +186,7 @@
             color: #f8d7a0;
             font-size: 13px;
             line-height: 1.5;
+            display: none;
         }
 
         .warning-box strong {
@@ -362,10 +363,6 @@
             <h3>✅ Turni Trovati:</h3>
             <div id="shiftsList"></div>
             
-            <div class="warning-box">
-                <strong>⚠️ Nota sulla Privacy:</strong> Il pulsante "Aggiungi a Google Calendar" utilizza credenziali OAuth pubbliche visibili nel codice. Questo è sicuro per uso personale, ma tieni presente che altri potrebbero teoricamente vedere le credenziali. I tuoi dati del calendario rimangono privati e protetti da Google.
-            </div>
-            
             <div class="auth-status" id="authStatus">
                 <span id="authStatusText"></span>
             </div>
@@ -396,12 +393,13 @@
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         // Google OAuth Configuration
-        const GOOGLE_CLIENT_ID = '907654321098-abcdefghijklmnop.apps.googleusercontent.com'; // Demo client ID - users can replace
-        const GOOGLE_API_KEY = 'AIzaSyDemoKey123456789'; // Demo API key
+        const GOOGLE_CLIENT_ID = '394855423192-v5d0gaho3o4676r539vs76kclp3aue1n.apps.googleusercontent.com';
         const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
         
         let googleAccessToken = null;
         let googleTokenClient = null;
+        let gapiLoaded = false;
+        let gisLoaded = false;
 
         // Global variables
         let extractedSchedule = null;
@@ -475,6 +473,13 @@
         }
 
         function initGoogleAuth() {
+            // Wait for Google Identity Services library to load
+            if (typeof google === 'undefined' || !google.accounts) {
+                log('⏳ Waiting for Google library to load...');
+                setTimeout(initGoogleAuth, 100);
+                return;
+            }
+
             try {
                 googleTokenClient = google.accounts.oauth2.initTokenClient({
                     client_id: GOOGLE_CLIENT_ID,
@@ -493,13 +498,15 @@
                         }
                     },
                     error_callback: (error) => {
-                        showStatus('❌ Errore autenticazione: ' + error.message, 'error');
-                        log('❌ Auth error: ' + error.message);
+                        showStatus('❌ Errore autenticazione: ' + (error.message || 'Unknown error'), 'error');
+                        log('❌ Auth error: ' + JSON.stringify(error));
                     }
                 });
+                gisLoaded = true;
                 log('✓ Google OAuth client initialized');
             } catch (error) {
                 log('⚠️ Could not initialize Google OAuth: ' + error.message);
+                setTimeout(initGoogleAuth, 500);
             }
         }
 
@@ -1096,10 +1103,14 @@
         log('✓ Page loaded successfully');
         log('✓ Ready to process PDF files');
 
-        // Initialize Google OAuth when page loads
-        window.onload = function() {
+        // Initialize Google OAuth when library loads
+        if (typeof google !== 'undefined' && google.accounts) {
             initGoogleAuth();
-        };
+        } else {
+            // Wait for Google library to load
+            log('⏳ Waiting for Google Identity Services to load...');
+            setTimeout(initGoogleAuth, 500);
+        }
 
         // Google Calendar button click handler
         document.getElementById('googleCalendarBtn').onclick = function() {
@@ -1108,6 +1119,20 @@
             
             if (!extractedSchedule || extractedSchedule.length === 0) {
                 showStatus('❌ Estrai prima i turni dal PDF!', 'error');
+                return;
+            }
+
+            if (!gisLoaded) {
+                showStatus('⏳ Caricamento autenticazione Google...', 'info');
+                log('⏳ Google library not ready yet, initializing...');
+                initGoogleAuth();
+                setTimeout(() => {
+                    if (gisLoaded) {
+                        document.getElementById('googleCalendarBtn').click();
+                    } else {
+                        showStatus('❌ Impossibile caricare autenticazione Google. Riprova tra qualche secondo.', 'error');
+                    }
+                }, 1000);
                 return;
             }
 
